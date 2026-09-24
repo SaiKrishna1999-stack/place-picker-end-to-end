@@ -3,10 +3,7 @@ import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { Place } from '../place.model';
 import { PlacesComponent } from '../places.component';
 import { PlacesContainerComponent } from '../places-container/places-container.component';
-import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/internal/operators/map';
-import { throwError } from 'rxjs/internal/observable/throwError';
-import { catchError } from 'rxjs/internal/operators/catchError';
+import { PlacesService } from '../places.service';
 
 @Component({
   selector: 'app-available-places',
@@ -19,19 +16,13 @@ export class AvailablePlacesComponent implements OnInit {
   places = signal<Place[] | undefined>(undefined);
   isFetchingPlaces = signal<boolean>(false);
   error = signal<string>('');
-  private httpClient = inject(HttpClient);
+  private placesService = inject(PlacesService);
   private destroyRef = inject(DestroyRef);
 
   ngOnInit() {
     this.isFetchingPlaces.set(true);
-    const subscription = this.httpClient.get<{ places: Place[] }>('http://localhost:3000/places').pipe( map((res) => res.places), 
-    catchError((error) => {
-      return throwError(() => 
-        new Error(
-          'There is a technical issue while fetching the places. Please try again later.'
-        )
-      );
-    })).subscribe({
+    const subscription = 
+    this.placesService.loadAvailablePlaces().subscribe({
       next: (places) => {
         console.log('responseData', places);
         this.places.set([...places]);
@@ -51,4 +42,15 @@ export class AvailablePlacesComponent implements OnInit {
 
   }   
   
+  onSelectedPlace(place: Place) {
+    console.log('Selected place:', place);
+    this.placesService.addPlaceToUserPlaces(place).subscribe({
+      next: (response) => {
+        console.log('Place added to user places:', response);
+      },
+      error: (error) => {
+        console.error('Error adding place to user places:', error);
+      }
+    });
+  }
 }
