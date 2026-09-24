@@ -6,6 +6,7 @@ import { map } from 'rxjs/internal/operators/map';
 import { tap } from 'rxjs/internal/operators/tap';
 import { throwError } from 'rxjs/internal/observable/throwError';
 import { catchError } from 'rxjs/internal/operators/catchError';
+import { ErrorService } from '../shared/error.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +14,7 @@ import { catchError } from 'rxjs/internal/operators/catchError';
 export class PlacesService {
   private userPlaces = signal<Place[]>([]);
   private httpClient = inject(HttpClient);
+  private errorService = inject(ErrorService);
 
   loadedUserPlaces = this.userPlaces.asReadonly();
 
@@ -33,13 +35,15 @@ export class PlacesService {
   }
 
   addPlaceToUserPlaces(place: Place) {
-    if (!this.userPlaces().some((p) => p.id === place.id)) {
-      this.userPlaces.set([...this.userPlaces(), place]);
+    const currentUserPlaces = this.userPlaces();
+    if (!currentUserPlaces.some((p) => p.id === place.id)) {
+      this.userPlaces.set([...currentUserPlaces, place]);
     }
     return this.httpClient.put(`http://localhost:3000/user-places`, { placeId: place.id }).pipe(
       tap({
         error: (error) => {
-        this.userPlaces.set(this.userPlaces());
+        this.userPlaces.set(currentUserPlaces);
+        this.errorService.showError('There is a technical issue while adding the place to user places. Please try again later.');
         return throwError(() => new Error('There is a technical issue while adding the place to user places. Please try again later.'));
         }
       })
