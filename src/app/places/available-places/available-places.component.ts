@@ -45,8 +45,8 @@ export class AvailablePlacesComponent implements OnInit {
   onSelectedPlace(place: Place) {
     console.log('Selected place:', place);
     this.placesService.addPlaceToUserPlaces(place).subscribe({
-      next: (response) => {
-        console.log('Place added to user places:', response);
+      next: () => {
+        console.log('Place added to user places:', place);
       },
       error: (error) => {
         console.error('Error adding place to user places:', error);

@@ -3,6 +3,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { Place } from './place.model';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/internal/operators/map';
+import { tap } from 'rxjs/internal/operators/tap';
 import { throwError } from 'rxjs/internal/observable/throwError';
 import { catchError } from 'rxjs/internal/operators/catchError';
 
@@ -20,11 +21,29 @@ export class PlacesService {
   }
 
   loadUserPlaces() {
-    return this.fetchUserPlaces('http://localhost:3000/user-places', 'There is a technical issue while fetching the user places. Please try again later.')
+    return this.fetchUserPlaces('http://localhost:3000/user-places', 'There is a technical issue while fetching the user places. Please try again later.').pipe(
+      tap(
+        {
+          next: (places) => {
+            this.userPlaces.set([...places]);
+          }
+        }
+      )
+    )
   }
 
   addPlaceToUserPlaces(place: Place) {
-    return this.httpClient.put(`http://localhost:3000/user-places`, { placeId: place.id });
+    if (!this.userPlaces().some((p) => p.id === place.id)) {
+      this.userPlaces.set([...this.userPlaces(), place]);
+    }
+    return this.httpClient.put(`http://localhost:3000/user-places`, { placeId: place.id }).pipe(
+      tap({
+        error: (error) => {
+        this.userPlaces.set(this.userPlaces());
+        return throwError(() => new Error('There is a technical issue while adding the place to user places. Please try again later.'));
+        }
+      })
+    );
   }
 
   fetchUserPlaces(url: string, errorMessage: string) {
