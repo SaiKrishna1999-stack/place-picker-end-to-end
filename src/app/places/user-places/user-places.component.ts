@@ -36,4 +36,15 @@ export class UserPlacesComponent {
     });
   
   }   
+
+  onSelectPlace(place: Place) {
+    this.placesService.removeUserPlace(place).subscribe({
+      next: () => {
+        console.log('Place removed from user places:', place);
+      },
+      error: (error) => {
+        console.error('Error removing place from user places:', error);
+      }
+    });
+  }
 }

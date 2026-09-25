@@ -62,5 +62,18 @@ export class PlacesService {
     );
   }
 
-  removeUserPlace(place: Place) {}
+  removeUserPlace(place: Place) {
+    return this.httpClient.delete<{ userPlaces: Place[] }>(`http://localhost:3000/user-places/${place.id}`).pipe(
+      map((res) => res.userPlaces),
+      tap({
+        next: (userPlaces) => {
+          this.userPlaces.set([...userPlaces]);
+        },
+        error: (error) => {
+          this.errorService.showError('There is a technical issue while removing the place from user places. Please try again later.');
+          return throwError(() => new Error('There is a technical issue while removing the place from user places. Please try again later.'));
+        }
+      })
+    );
+  }
 }
