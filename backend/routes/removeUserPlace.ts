@@ -3,11 +3,27 @@ import { PlaceEntity } from './../entities/places-entity';
 
 const router = express.Router();
 
-router.get('/api/places', async (req, res) => {
-    const places = await PlaceEntity.find({ relations: ['image'] });
-    // console.log('places:', places);
+router.delete('/api/user-places/:id',  async(req, res) => {
+    const placeId = req.params.id;
+
+    const place = await PlaceEntity.findOne({
+        where: { id: placeId }
+    });
+    
+    if (!place) {
+        return res.status(404).json({ message: 'Place not found' });
+    }
+
+    place.isFavorite = false;
+    await place.save();
+
+    const places = await PlaceEntity.find({
+        where: {isFavorite: true},
+        relations: ['image']
+    });
+
     let responsePlaces = {
-        places: places.map((place) => {
+        userPlaces: places.map((place) => {
             return {
                 id: place.id,
                 title: place.title,
@@ -24,8 +40,8 @@ router.get('/api/places', async (req, res) => {
     }
     // console.log('responsePlaces:', responsePlaces);
     res.json(responsePlaces);
-});
+})
 
 export {
-    router as getAvailablePlacesRouter
+    router as removeUserPlaceRouter
 }

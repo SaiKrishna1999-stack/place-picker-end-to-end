@@ -9,7 +9,8 @@ router.put('/api/user-places',  async(req, res) => {
     } = req.body;
 
     const place = await PlaceEntity.findOne({
-        where: { id: placeId }
+        where: { id: placeId },
+        relations: ['image']
     });
     
     if (!place) {

@@ -4,7 +4,8 @@ import { ImageEntity } from './entities/image-entity';
 import { createPlaceRouter } from './routes/create_places';
 import { getAvailablePlacesRouter } from './routes/getAvailablePlaces';
 import { getUserPlacesRouter } from './routes/getUserPlaces';
-import { addFavoritePlaceRouter } from './routes/addFavoritePlace'
+import { addFavoritePlaceRouter } from './routes/addFavoritePlace';
+import { removeUserPlaceRouter } from './routes/removeUserPlace';
 import express from 'express';
 
 const app = express();
@@ -22,7 +23,7 @@ app.use(createPlaceRouter);
 app.use(getAvailablePlacesRouter);
 app.use(getUserPlacesRouter);
 app.use(addFavoritePlaceRouter);
-
+app.use(removeUserPlaceRouter);
 
 const main = async () => {
     try {
