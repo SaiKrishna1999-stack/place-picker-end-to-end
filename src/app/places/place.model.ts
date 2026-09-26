@@ -5,6 +5,7 @@ export interface Place {
     src: string;
     alt: string;
   };
-  lat: number;
-  lon: number;
+  latitude: number;
+  longitude: number;
+  isFavorite: boolean;
 }

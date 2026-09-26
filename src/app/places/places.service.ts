@@ -19,14 +19,15 @@ export class PlacesService {
   loadedUserPlaces = this.userPlaces.asReadonly();
 
   loadAvailablePlaces() {
-    return this.fetchUserPlaces('http://localhost:3000/places', 'There is a technical issue while fetching the available places. Please try again later.')
+    return this.fetchUserPlaces('http://localhost:3000/api/places', 'There is a technical issue while fetching the available places. Please try again later.')
   }
 
   loadUserPlaces() {
-    return this.fetchUserPlaces('http://localhost:3000/user-places', 'There is a technical issue while fetching the user places. Please try again later.').pipe(
+    return this.fetchUserPlaces('http://localhost:3000/api/user-places', 'There is a technical issue while fetching the user places. Please try again later.').pipe(
       tap(
         {
           next: (places) => {
+            console.log('Hello world!', places)
             this.userPlaces.set([...places]);
           }
         }
@@ -36,11 +37,15 @@ export class PlacesService {
 
   addPlaceToUserPlaces(place: Place) {
     const currentUserPlaces = this.userPlaces();
+    let userPlace;
     if (!currentUserPlaces.some((p) => p.id === place.id)) {
-      this.userPlaces.set([...currentUserPlaces, place]);
+      userPlace = place;
     }
-    return this.httpClient.put(`http://localhost:3000/user-places`, { placeId: place.id }).pipe(
+    return this.httpClient.put(`http://localhost:3000/api/user-places`, { placeId: place.id }).pipe(
       tap({
+        next: (userPlaces) => {
+          this.userPlaces.set([...currentUserPlaces, userPlace!]);
+        },
         error: (error) => {
         this.userPlaces.set(currentUserPlaces);
         this.errorService.showError('There is a technical issue while adding the place to user places. Please try again later.');
@@ -63,7 +68,7 @@ export class PlacesService {
   }
 
   removeUserPlace(place: Place) {
-    return this.httpClient.delete<{ userPlaces: Place[] }>(`http://localhost:3000/user-places/${place.id}`).pipe(
+    return this.httpClient.delete<{ userPlaces: Place[] }>(`http://localhost:3000/api/user-places/${place.id}`).pipe(
       map((res) => res.userPlaces),
       tap({
         next: (userPlaces) => {
